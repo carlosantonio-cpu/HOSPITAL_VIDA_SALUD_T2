@@ -1,0 +1,107 @@
+name: Hospital Vida Salud CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  eureka-server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Probar Eureka
+        working-directory: eureka-server
+        run: chmod +x mvnw && ./mvnw -B test
+
+  api-gateway:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Probar API Gateway
+        working-directory: api-gateway
+        run: chmod +x mvnw && ./mvnw -B test
+
+  paciente-service:
+    runs-on: ubuntu-latest
+    env:
+      DB_USERNAME: ci_user
+      DB_PASSWORD: ci_password
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Probar Pacientes
+        working-directory: paciente-service
+        run: chmod +x mvnw && ./mvnw -B test
+
+  cita-service:
+    runs-on: ubuntu-latest
+    env:
+      DB_USERNAME: ci_user
+      DB_PASSWORD: ci_password
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    services:
+      rabbitmq:
+        image: rabbitmq:4-management
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Probar Citas
+        working-directory: cita-service
+        run: chmod +x gradlew && ./gradlew --no-daemon test
+
+  notificacion-service:
+    runs-on: ubuntu-latest
+    env:
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    services:
+      rabbitmq:
+        image: rabbitmq:4-management
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Probar Notificaciones
+        working-directory: notificacion-service
+        run: chmod +x gradlew && ./gradlew --no-daemon test

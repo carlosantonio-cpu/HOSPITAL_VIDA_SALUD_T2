@@ -1,0 +1,13 @@
+**/target/
+**/build/
+**/.gradle/
+**/.idea/
+**/out/
+**/bin/
+*.iml
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
