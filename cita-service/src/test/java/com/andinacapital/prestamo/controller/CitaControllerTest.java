@@ -27,7 +27,8 @@ class CitaControllerTest {
         controller = new CitaController(
                 repository,
                 amqpTemplate,
-                objectMapper
+                objectMapper,
+                "http://localhost:8081"
         );
     }
 

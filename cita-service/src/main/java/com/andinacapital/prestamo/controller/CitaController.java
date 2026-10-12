@@ -7,6 +7,7 @@ import com.andinacapital.prestamo.repository.CitaRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -27,17 +28,17 @@ public class CitaController {
     private final CitaRepository repository;
     private final AmqpTemplate amqpTemplate;
     private final ObjectMapper objectMapper;
-
-    private final WebClient pacienteClient =
-            WebClient.create("http://localhost:8081");
+    private final WebClient pacienteClient;
 
     public CitaController(
             CitaRepository repository,
             AmqpTemplate amqpTemplate,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            @Value("${hospital.services.paciente-url}") String pacienteServiceUrl) {
         this.repository = repository;
         this.amqpTemplate = amqpTemplate;
         this.objectMapper = objectMapper;
+        this.pacienteClient = WebClient.create(pacienteServiceUrl);
     }
 
     @GetMapping
